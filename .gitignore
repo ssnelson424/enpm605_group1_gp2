@@ -54,3 +54,5 @@ CATKIN_IGNORE
 build/
 log/
 install/
+.mypy_cache
+src.zip
