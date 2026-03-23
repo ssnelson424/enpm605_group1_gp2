@@ -51,3 +51,6 @@ qtcreator-*
 CATKIN_IGNORE
 
 .vscode/
+build/
+log/
+install/
