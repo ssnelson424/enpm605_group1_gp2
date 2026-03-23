@@ -21,7 +21,8 @@ if [ -n "$ZSH_VERSION" ]; then
         source /opt/ros/jazzy/setup.zsh
         source ~/enpm605_ws/install/setup.zsh
         source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh
-        eval "$(register-python-argcomplete3 ros2)"
+        eval "$(register-python-argcomplete ros2)"
+        eval "$(register-python-argcomplete colcon)"
         cd ~/enpm605_ws
     }
 fi
