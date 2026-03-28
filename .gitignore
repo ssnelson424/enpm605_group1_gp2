@@ -56,3 +56,4 @@ log/
 install/
 .mypy_cache
 src.zip
+__pycache__/
