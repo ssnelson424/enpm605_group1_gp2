@@ -27,4 +27,9 @@ def generate_launch_description():
         emulate_tty=True,
     )
 
-    return LaunchDescription([talker_arg, talker, listener])
+    ld = LaunchDescription()
+    ld.add_action(talker_arg)
+    ld.add_action(talker)
+    ld.add_action(listener)
+
+    return ld

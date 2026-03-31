@@ -6,6 +6,8 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
+    ld = LaunchDescription()
+
     included_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
@@ -14,4 +16,6 @@ def generate_launch_description():
         )
     )
 
-    return LaunchDescription([included_launch])
+    ld.add_action(included_launch)
+
+    return ld
