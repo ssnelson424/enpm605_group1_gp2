@@ -6,6 +6,7 @@ from executor_demo.single_threaded_demo_node import SingleThreadedDemoNode
 def main(args=None):
     rclpy.init(args=args)
     node = SingleThreadedDemoNode()
+    
     executor = SingleThreadedExecutor()
     executor.add_node(node)
     try:
