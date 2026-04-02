@@ -24,10 +24,10 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'single_threaded_demo = scripts.main_single_threaded_demo:main',
-            'mutex_demo = scripts.main_mutex_demo:main',
-            'reentrant_demo = scripts.main_reentrant_demo:main',
-            'slow_cb_demo = scripts.main_slow_cb_demo:main',
+            'single_threaded_demo = executor_demo.scripts.main_single_threaded_demo:main',
+            'mutex_demo = executor_demo.scripts.main_mutex_demo:main',
+            'reentrant_demo = executor_demo.scripts.main_reentrant_demo:main',
+            'slow_cb_demo = executor_demo.scripts.main_slow_cb_demo:main',
         ],
     },
 )

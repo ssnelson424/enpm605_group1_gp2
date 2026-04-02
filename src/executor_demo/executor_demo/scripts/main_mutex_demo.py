@@ -6,7 +6,8 @@ from executor_demo.mutex_demo_node import MutexDemoNode
 def main(args=None):
     rclpy.init(args=args)
     node = MutexDemoNode()
-    executor = MultiThreadedExecutor(num_threads=4)
+    executor = MultiThreadedExecutor()
+    # executor = MultiThreadedExecutor(num_threads=4)
     executor.add_node(node)
     try:
         executor.spin()

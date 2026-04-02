@@ -25,11 +25,11 @@ setup(
     entry_points={
         'console_scripts': [
             'minimal_node = first_pkg.minimal_node:main',
-            'advanced_node = scripts.main_advanced_node:main',
-            'interface_demo = scripts.main_interface_demo:main',
-            'publisher_demo_node = scripts.main_publisher_demo_node:main',
-            'subscriber_demo_node = scripts.main_subscriber_demo_node:main',
-            'qos_demo_node = scripts.main_qos_demo_node:main',
+            'advanced_node = first_pkg.scripts.main_advanced_node:main',
+            'interface_demo = first_pkg.scripts.main_interface_demo:main',
+            'publisher_demo_node = first_pkg.scripts.main_publisher_demo_node:main',
+            'subscriber_demo_node = first_pkg.scripts.main_subscriber_demo_node:main',
+            'qos_demo_node = first_pkg.scripts.main_qos_demo_node:main',
         ],
     },
 )
