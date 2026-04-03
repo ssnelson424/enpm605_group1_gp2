@@ -5,7 +5,9 @@
 
 
 # ROS 2 environment
-ROS_DISTRO="humble"
+
+# TODO: Edit accordingly
+ROS_DISTRO="humble" 
 export ROS_DOMAIN_ID=0
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 # export ROS_LOCALHOST_ONLY=1   # uncomment to restrict to localhost
