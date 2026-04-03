@@ -1,0 +1,9 @@
+camera_demo:
+  ros__parameters:
+    camera_name: 'front_camera'
+    camera_rate: 30
+
+lidar_demo:
+  ros__parameters:
+    lidar_name: 'top_lidar'
+    lidar_rate: 20

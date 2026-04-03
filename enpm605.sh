@@ -5,6 +5,7 @@
 
 
 # ROS 2 environment
+ROS_DISTRO="humble"
 export ROS_DOMAIN_ID=0
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 # export ROS_LOCALHOST_ONLY=1   # uncomment to restrict to localhost
@@ -42,7 +43,6 @@ cbb() {
 # ── Bash ─────────────────────────────────────────────────────────────────────
 if [ -n "$BASH_VERSION" ]; then
     function enpm605() {
-        ROS_DISTRO="jazzy"
         # Source the ROS 2 ROS_DISTRO base installation
         source /opt/ros/${ROS_DISTRO}/setup.bash
         # Source the course workspace
@@ -60,7 +60,6 @@ fi
 # Only define the function if the current shell is Zsh
 if [ -n "$ZSH_VERSION" ]; then
     function enpm605() {
-        ROS_DISTRO="jazzy"
         # Source the ROS 2 ROS_DISTRO base installation
         source /opt/ros/${ROS_DISTRO}/setup.zsh
         # Source the course workspace
