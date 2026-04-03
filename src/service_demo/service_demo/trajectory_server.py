@@ -1,7 +1,9 @@
 """Trajectory server node that provides the compute_trajectory service.
 
 This module demonstrates how to create a ROS 2 service server using
-a custom service interface (ComputeTrajectory).
+a custom service interface (ComputeTrajectory). This is a text-based
+demo -- no robot or simulator is needed. The server logs the request
+and returns a success message without actually computing a path.
 """
 
 from rclpy.node import Node
@@ -10,7 +12,7 @@ from custom_interfaces.srv import ComputeTrajectory
 
 
 class TrajectoryServer(Node):
-    """A service server node that computes trajectories on request."""
+    """A service server node that simulates trajectory computation on request."""
 
     def __init__(self, node_name: str) -> None:
         """Initialize the trajectory service server.

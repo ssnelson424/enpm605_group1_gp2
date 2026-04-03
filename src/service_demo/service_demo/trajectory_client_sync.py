@@ -1,7 +1,8 @@
 """Synchronous trajectory client node.
 
 This module demonstrates how to create a ROS 2 service client that
-calls a service synchronously using client.call().
+calls a service synchronously using client.call(). This is a text-based
+demo -- no robot or simulator is needed.
 
 Warning:
     Using synchronous service calls (client.call) with a

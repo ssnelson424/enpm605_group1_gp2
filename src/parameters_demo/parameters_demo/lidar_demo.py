@@ -9,6 +9,7 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rcl_interfaces.msg import (
     ParameterDescriptor,
+    FloatingPointRange,
     IntegerRange,
     SetParametersResult,
 )
@@ -21,28 +22,73 @@ class LidarDemo(Node):
         """Initialize the node, declare parameters, and start the timer.
 
         Args:
-            node_name (str): Name to register this node with in the ROS 2 graph.
+            node_name: Name to register this node with in the ROS 2 graph.
         """
         super().__init__(node_name)
 
-        # -- Declare parameters --
+        # -- Declare parameters (matching the sensor parameter table) --
+        # Freely writable parameters
         self.declare_parameter(
-            "lidar_name",
-            "top_lidar",
+            "lidar_name", "top_lidar",
             ParameterDescriptor(description="Name of the lidar sensor"),
         )
-
-        lidar_rate_descriptor = ParameterDescriptor(
-            description="Publishing rate for the lidar (Hz)",
-            integer_range=[
-                IntegerRange(from_value=1, to_value=30, step=1)
-            ],
-        )
-        self.declare_parameter("lidar_rate", 10, lidar_rate_descriptor)
-
         self.declare_parameter(
-            "lidar_model",
-            "default_lidar",
+            "lidar_frame_id", "lidar_link",
+            ParameterDescriptor(description="TF frame ID for the lidar"),
+        )
+        self.declare_parameter(
+            "min_range", 0.1,
+            ParameterDescriptor(
+                description="Minimum detection range in meters",
+                floating_point_range=[
+                    FloatingPointRange(from_value=0.0, to_value=10.0, step=0.0)
+                ],
+            ),
+        )
+        self.declare_parameter(
+            "max_range", 100.0,
+            ParameterDescriptor(
+                description="Maximum detection range in meters",
+                floating_point_range=[
+                    FloatingPointRange(from_value=1.0, to_value=300.0, step=0.0)
+                ],
+            ),
+        )
+        self.declare_parameter(
+            "min_angle", -3.14159,
+            ParameterDescriptor(description="Minimum scan angle in radians"),
+        )
+        self.declare_parameter(
+            "max_angle", 3.14159,
+            ParameterDescriptor(description="Maximum scan angle in radians"),
+        )
+        self.declare_parameter(
+            "intensity_threshold", 0.0,
+            ParameterDescriptor(description="Minimum intensity to report a return"),
+        )
+
+        # Timer rebuild required
+        self.declare_parameter(
+            "scan_frequency", 10,
+            ParameterDescriptor(
+                description="Scan frequency in Hz",
+                integer_range=[IntegerRange(from_value=1, to_value=30, step=1)],
+            ),
+        )
+
+        # Node restart required
+        self.declare_parameter(
+            "port", "/dev/lidar0",
+            ParameterDescriptor(description="Serial port for the lidar (requires restart)"),
+        )
+        self.declare_parameter(
+            "return_mode", "strongest",
+            ParameterDescriptor(description="Return mode: strongest, last, dual (requires restart)"),
+        )
+
+        # Extra parameter for launch file argument demo
+        self.declare_parameter(
+            "lidar_model", "default_lidar",
             ParameterDescriptor(description="Model of the lidar sensor"),
         )
 
@@ -50,19 +96,34 @@ class LidarDemo(Node):
         self._lidar_name: str = (
             self.get_parameter("lidar_name").get_parameter_value().string_value
         )
-        self._lidar_rate: int = (
-            self.get_parameter("lidar_rate")
-            .get_parameter_value()
-            .integer_value
+        self._lidar_frame_id: str = (
+            self.get_parameter("lidar_frame_id").get_parameter_value().string_value
+        )
+        self._min_range: float = (
+            self.get_parameter("min_range").get_parameter_value().double_value
+        )
+        self._max_range: float = (
+            self.get_parameter("max_range").get_parameter_value().double_value
+        )
+        self._min_angle: float = (
+            self.get_parameter("min_angle").get_parameter_value().double_value
+        )
+        self._max_angle: float = (
+            self.get_parameter("max_angle").get_parameter_value().double_value
+        )
+        self._intensity_threshold: float = (
+            self.get_parameter("intensity_threshold").get_parameter_value().double_value
+        )
+        self._scan_frequency: int = (
+            self.get_parameter("scan_frequency").get_parameter_value().integer_value
         )
         self._lidar_model: str = (
-            self.get_parameter("lidar_model")
-            .get_parameter_value()
-            .string_value
+            self.get_parameter("lidar_model").get_parameter_value().string_value
         )
 
         self.get_logger().info(f"lidar_name: {self._lidar_name}")
-        self.get_logger().info(f"lidar_rate: {self._lidar_rate}")
+        self.get_logger().info(f"lidar_frame_id: {self._lidar_frame_id}")
+        self.get_logger().info(f"scan_frequency: {self._scan_frequency}")
         self.get_logger().info(f"lidar_model: {self._lidar_model}")
 
         # -- Publisher --
@@ -71,14 +132,14 @@ class LidarDemo(Node):
         )
 
         # -- Timer --
-        self._timer = self.create_timer(
-            1.0 / self._lidar_rate, self._timer_callback
+        self._scan_timer = self.create_timer(
+            1.0 / self._scan_frequency, self._scan_pub_callback
         )
 
         # -- Parameter callback --
-        self.add_on_set_parameters_callback(self._on_parameter_change)
+        self.add_on_set_parameters_callback(self._parameter_update_cb)
 
-    def _timer_callback(self) -> None:
+    def _scan_pub_callback(self) -> None:
         """Publish a simulated lidar scan message."""
         msg = String()
         msg.data = (
@@ -87,16 +148,16 @@ class LidarDemo(Node):
         self._publisher.publish(msg)
         self.get_logger().info(msg.data)
 
-    def _on_parameter_change(
+    def _parameter_update_cb(
         self, params: list[Parameter]
     ) -> SetParametersResult:
         """Validate and apply parameter changes at runtime.
 
         Args:
-            params (list[Parameter]): List of parameters being changed.
+            params: List of parameters being changed.
 
         Returns:
-            SetParametersResult: Whether the parameter change was accepted.
+            Whether the parameter change was accepted.
         """
         for param in params:
             if param.name == "lidar_name":
@@ -106,24 +167,69 @@ class LidarDemo(Node):
                         reason="lidar_name must be a string",
                     )
                 self._lidar_name = param.value
-                self.get_logger().info(
-                    f"lidar_name updated to: {self._lidar_name}"
-                )
 
-            elif param.name == "lidar_rate":
+            elif param.name == "lidar_frame_id":
+                if param.type_ != Parameter.Type.STRING:
+                    return SetParametersResult(
+                        successful=False,
+                        reason="lidar_frame_id must be a string",
+                    )
+                self._lidar_frame_id = param.value
+
+            elif param.name == "min_range":
+                if param.type_ != Parameter.Type.DOUBLE:
+                    return SetParametersResult(
+                        successful=False,
+                        reason="min_range must be a double",
+                    )
+                self._min_range = param.value
+
+            elif param.name == "max_range":
+                if param.type_ != Parameter.Type.DOUBLE:
+                    return SetParametersResult(
+                        successful=False,
+                        reason="max_range must be a double",
+                    )
+                self._max_range = param.value
+
+            elif param.name == "min_angle":
+                if param.type_ != Parameter.Type.DOUBLE:
+                    return SetParametersResult(
+                        successful=False,
+                        reason="min_angle must be a double",
+                    )
+                self._min_angle = param.value
+
+            elif param.name == "max_angle":
+                if param.type_ != Parameter.Type.DOUBLE:
+                    return SetParametersResult(
+                        successful=False,
+                        reason="max_angle must be a double",
+                    )
+                self._max_angle = param.value
+
+            elif param.name == "intensity_threshold":
+                if param.type_ != Parameter.Type.DOUBLE:
+                    return SetParametersResult(
+                        successful=False,
+                        reason="intensity_threshold must be a double",
+                    )
+                self._intensity_threshold = param.value
+
+            elif param.name == "scan_frequency":
                 if param.type_ != Parameter.Type.INTEGER:
                     return SetParametersResult(
                         successful=False,
-                        reason="lidar_rate must be an integer",
+                        reason="scan_frequency must be an integer",
                     )
-                self._lidar_rate = param.value
+                self._scan_frequency = param.value
                 self.get_logger().info(
-                    f"lidar_rate updated to: {self._lidar_rate}"
+                    f"scan_frequency updated to: {self._scan_frequency}"
                 )
                 # Cancel the existing timer and recreate it
-                self._timer.cancel()
-                self._timer = self.create_timer(
-                    1.0 / self._lidar_rate, self._timer_callback
+                self._scan_timer.cancel()
+                self._scan_timer = self.create_timer(
+                    1.0 / self._scan_frequency, self._scan_pub_callback
                 )
 
             elif param.name == "lidar_model":
@@ -133,8 +239,5 @@ class LidarDemo(Node):
                         reason="lidar_model must be a string",
                     )
                 self._lidar_model = param.value
-                self.get_logger().info(
-                    f"lidar_model updated to: {self._lidar_model}"
-                )
 
         return SetParametersResult(successful=True)

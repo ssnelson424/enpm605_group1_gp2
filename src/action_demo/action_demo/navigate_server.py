@@ -1,8 +1,9 @@
 """Navigate action server node.
 
 This module demonstrates how to create a ROS 2 action server using
-a custom action interface (Navigate). The server simulates navigation
-by publishing feedback over 10 iterations.
+a custom action interface (Navigate). This is a text-based demo -- no
+robot or simulator is needed. Navigation is simulated with a countdown
+loop using time.sleep() and log messages.
 """
 
 import time

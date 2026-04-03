@@ -2,6 +2,7 @@
 
 This module demonstrates how to create a ROS 2 service client that
 calls a service asynchronously using call_async with add_done_callback.
+This is a text-based demo -- no robot or simulator is needed.
 """
 
 from rclpy.node import Node

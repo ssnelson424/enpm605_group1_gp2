@@ -1,7 +1,8 @@
 """Navigate action client node.
 
 This module demonstrates how to create a ROS 2 action client using
-a custom action interface (Navigate). The client sends navigation
+a custom action interface (Navigate). This is a text-based demo -- no
+robot or simulator is needed. The client sends simulated navigation
 goals and handles feedback and results via callbacks.
 """
 
