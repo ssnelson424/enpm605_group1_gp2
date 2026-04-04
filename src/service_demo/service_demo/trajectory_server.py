@@ -9,6 +9,7 @@ and returns a success message without actually computing a path.
 from rclpy.node import Node
 
 from custom_interfaces.srv import ComputeTrajectory
+from geometry_msgs.msg import Pose
 
 
 class TrajectoryServer(Node):
@@ -54,6 +55,17 @@ class TrajectoryServer(Node):
             f"{request.goal_pose.position.z})\n"
             f"  Max velocity: {request.max_velocity}"
         )
+
+        # Simulate waypoints along a straight line
+        for i in range(1, 4):
+            wp = Pose()
+            wp.position.x = (
+                request.start_pose.position.x
+                + i
+                * (request.goal_pose.position.x - request.start_pose.position.x)
+                / 3.0
+            )
+            response.waypoints.append(wp)
 
         response.success = True
         response.message = "Trajectory computed successfully"

@@ -35,7 +35,7 @@ class MutexDemoNode(Node):
 
     def _cb1(self):
         self._log(1, "START")
-        time.sleep(0.200)
+        time.sleep(0.030)
         self._log(1, "DONE")
 
     def _cb2(self):

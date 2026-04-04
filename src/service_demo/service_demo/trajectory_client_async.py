@@ -5,6 +5,8 @@ calls a service asynchronously using call_async with add_done_callback.
 This is a text-based demo -- no robot or simulator is needed.
 """
 
+import random
+
 from rclpy.node import Node
 
 from custom_interfaces.srv import ComputeTrajectory
@@ -20,19 +22,27 @@ class TrajectoryClientAsync(Node):
             node_name: Name to register this node with in the ROS 2 graph.
         """
         super().__init__(node_name)
-        self._client = self.create_client(
-            ComputeTrajectory, "compute_trajectory"
-        )
+        self._client = self.create_client(ComputeTrajectory, "compute_trajectory")
         # Wait for the service to become available
         while not self._client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("Service not available, waiting...")
 
-        self._send_request()
+        # Use a repeating timer to send requests in a loop.
+        self._timer = self.create_timer(2.0, self._timer_callback)
+        
+        
 
+    def _timer_callback(self) -> None:
+        """Send a synchronous request every timer tick."""
+        self._send_request()
+        
+        for _ in range(1,20):
+            self.get_logger().info("Executing after service call")
+        
     def _send_request(self) -> None:
         """Build and send an asynchronous ComputeTrajectory request."""
         request = ComputeTrajectory.Request()
-        request.goal_pose.position.x = 5.0
+        request.goal_pose.position.x = random.uniform(0.0, 10.0)
         request.max_velocity = 1.0
 
         self.get_logger().info("Sending async request...")
@@ -48,12 +58,13 @@ class TrajectoryClientAsync(Node):
         try:
             response = future.result()
             if response.success:
-                self.get_logger().info(
-                    f"Service call succeeded: {response.message}"
-                )
+                self.get_logger().info(f"Service call succeeded: {response.message}")
+                for i, waypoint in enumerate(response.waypoints):
+                    self.get_logger().info(
+                        f"  Waypoint {i}: position=({waypoint.position.x}, "
+                        f"{waypoint.position.y}, {waypoint.position.z})"
+                    )
             else:
-                self.get_logger().warn(
-                    f"Service call failed: {response.message}"
-                )
+                self.get_logger().warn(f"Service call failed: {response.message}")
         except Exception as e:
             self.get_logger().error(f"Service call failed: {e}")

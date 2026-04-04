@@ -5,6 +5,7 @@ synchronous request to the compute_trajectory service.
 """
 
 import rclpy
+from rclpy.executors import MultiThreadedExecutor
 from service_demo.trajectory_client_sync import TrajectoryClientSync
 
 
@@ -16,8 +17,10 @@ def main(args=None):
     """
     rclpy.init(args=args)
     node = TrajectoryClientSync("trajectory_client_sync")
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
     try:
-        rclpy.spin(node)
+        executor.spin()
     except KeyboardInterrupt as e:
         print(f"Exception: {type(e).__name__}")
     finally:

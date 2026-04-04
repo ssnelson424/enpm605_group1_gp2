@@ -7,7 +7,7 @@
 # ROS 2 environment
 
 # TODO: Edit accordingly
-ROS_DISTRO="humble" 
+ROS_DISTRO="jazzy" 
 export ROS_DOMAIN_ID=0
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 # export ROS_LOCALHOST_ONLY=1   # uncomment to restrict to localhost
