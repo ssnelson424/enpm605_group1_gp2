@@ -1,7 +1,7 @@
 """Entry point for the task_status_demo executable."""
 
 import rclpy
-from message_demo.task_status_demo_node import TaskStatusDemo
+from message_demo.task_status_demo import TaskStatusDemo
 
 
 def main(args=None):
