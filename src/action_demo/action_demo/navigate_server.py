@@ -94,7 +94,7 @@ class NavigateServer(Node):
                 result.elapsed_time = float(i - 1)
                 return result
 
-            # Simulate work
+            # Simulate work: put actual execution code here
             time.sleep(1.0)
 
             # Publish feedback

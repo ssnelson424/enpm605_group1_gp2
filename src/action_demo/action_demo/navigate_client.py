@@ -25,6 +25,13 @@ class NavigateClient(Node):
         super().__init__(node_name)
         self._action_client = ActionClient(self, Navigate, "navigate")
         self._goal_handle = None
+        self._feedback_count = 0
+        self._canceling = False
+
+        self.declare_parameter("cancel_and_resend", False)
+        self._cancel_and_resend = (
+            self.get_parameter("cancel_and_resend").get_parameter_value().bool_value
+        )
 
     def send_goal(self, x: float, y: float) -> None:
         """Send a navigation goal to the action server.
@@ -36,6 +43,8 @@ class NavigateClient(Node):
             x: Target x position.
             y: Target y position.
         """
+        self._feedback_count = 0
+        self._canceling = False
         self.get_logger().info("Waiting for action server...")
         self._action_client.wait_for_server()
 
@@ -71,6 +80,9 @@ class NavigateClient(Node):
     def _feedback_callback(self, feedback_msg) -> None:
         """Handle feedback from the action server.
 
+        If cancel_and_resend is True, cancels the goal after 5 feedback
+        messages and sends a new goal.
+
         Args:
             feedback_msg: The feedback message containing navigation progress.
         """
@@ -80,8 +92,39 @@ class NavigateClient(Node):
             f"{feedback.distance_remaining:.1f} remaining"
         )
 
+        self._feedback_count += 1
+        if (
+            self._cancel_and_resend
+            and not self._canceling
+            and self._feedback_count == 5
+            and self._goal_handle is not None
+        ):
+            self._canceling = True
+            self.get_logger().info("Canceling goal after 5 feedback messages...")
+            cancel_future = self._goal_handle.cancel_goal_async()
+            cancel_future.add_done_callback(self._cancel_done_callback)
+
+    def _cancel_done_callback(self, future) -> None:
+        """Handle the cancel response.
+
+        The new goal is sent from _result_callback once the canceled
+        result is received, to avoid racing with the result future.
+
+        Args:
+            future: The future containing the cancel response.
+        """
+        cancel_response = future.result()
+        if len(cancel_response.goals_canceling) > 0:
+            self.get_logger().info("Cancel accepted by server.")
+        else:
+            self.get_logger().warn("Cancel request was rejected.")
+            self._canceling = False
+
     def _result_callback(self, future) -> None:
         """Handle the final result from the action server.
+
+        If the goal was canceled and cancel_and_resend is active,
+        sends a new goal.
 
         Args:
             future: The future containing the action result.
@@ -95,6 +138,13 @@ class NavigateClient(Node):
                 f"Total distance: {result.total_distance:.1f}, "
                 f"Elapsed time: {result.elapsed_time:.1f}s"
             )
+        elif status == GoalStatus.STATUS_CANCELED:
+            self.get_logger().info("Goal was canceled.")
+            if self._canceling:
+                self._canceling = False
+                self._cancel_and_resend = False
+                self.get_logger().info("Sending new goal...")
+                self.send_goal(8.0, 6.0)
         else:
             self.get_logger().warn(
                 f"Navigation failed with status: {status}"
