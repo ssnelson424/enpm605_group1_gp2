@@ -23,7 +23,12 @@ class NavigateClient(Node):
             node_name: Name to register this node with in the ROS 2 graph.
         """
         super().__init__(node_name)
-        self._action_client = ActionClient(self, Navigate, "navigate")
+        self._action_client = ActionClient(
+            self,  # the current node
+            Navigate,  # the action type
+            "navigate",  # the action name
+        )
+
         self._goal_handle = None
         self._feedback_count = 0
         self._canceling = False
@@ -33,7 +38,10 @@ class NavigateClient(Node):
             self.get_parameter("cancel_and_resend").get_parameter_value().bool_value
         )
 
-    def send_goal(self, x: float, y: float) -> None:
+        # Send a hardcoded goal
+        self.send_goal(5.0, 3.0, 1.0)
+
+    def send_goal(self, x: float, y: float, max_speed: float) -> None:
         """Send a navigation goal to the action server.
 
         Waits for the server to become available, then sends the goal
@@ -42,6 +50,7 @@ class NavigateClient(Node):
         Args:
             x: Target x position.
             y: Target y position.
+            max_speed: Maximum allowed speed for the navigation.
         """
         self._feedback_count = 0
         self._canceling = False
@@ -51,12 +60,20 @@ class NavigateClient(Node):
         goal_msg = Navigate.Goal()
         goal_msg.target_pose.position.x = x
         goal_msg.target_pose.position.y = y
-        goal_msg.max_speed = 1.0
+        goal_msg.max_speed = max_speed
 
-        self.get_logger().info(f"Sending goal: ({x}, {y})")
-        self._action_client.send_goal_async(
-            goal_msg, feedback_callback=self._feedback_callback
-        ).add_done_callback(self._goal_response_callback)
+        self.get_logger().info(
+            f"Sending goal: ({x}, {y}), max_speed={max_speed}"
+        )
+        
+        # send the goal asynchronously
+        future = self._action_client.send_goal_async(
+            goal_msg, # the goal
+            feedback_callback=self._feedback_callback # process server feedback
+        )
+        
+        # process server goal response
+        future.add_done_callback(self._goal_response_callback)
 
     def _goal_response_callback(self, future) -> None:
         """Handle the goal response from the server.
@@ -71,11 +88,14 @@ class NavigateClient(Node):
             self.get_logger().warn("Goal rejected.")
             return
 
+        # Log confirmation that the server accepted the goal
         self.get_logger().info("Goal accepted.")
+
+        # Store the goal handle so other callbacks (e.g. feedback) can cancel the goal
         self._goal_handle = goal_handle
-        goal_handle.get_result_async().add_done_callback(
-            self._result_callback
-        )
+
+        # Request the final result asynchronously and register a callback for when it arrives
+        goal_handle.get_result_async().add_done_callback(self._result_callback)
 
     def _feedback_callback(self, feedback_msg) -> None:
         """Handle feedback from the action server.
@@ -144,8 +164,6 @@ class NavigateClient(Node):
                 self._canceling = False
                 self._cancel_and_resend = False
                 self.get_logger().info("Sending new goal...")
-                self.send_goal(8.0, 6.0)
+                self.send_goal(8.0, 6.0, 1.0)
         else:
-            self.get_logger().warn(
-                f"Navigation failed with status: {status}"
-            )
+            self.get_logger().warn(f"Navigation failed with status: {status}")

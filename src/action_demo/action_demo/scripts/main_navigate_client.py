@@ -16,7 +16,6 @@ def main(args=None):
     """
     rclpy.init(args=args)
     node = NavigateClient("navigate_client")
-    node.send_goal(5.0, 3.0)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt as e:
