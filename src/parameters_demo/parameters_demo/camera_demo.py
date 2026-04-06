@@ -54,7 +54,7 @@ class CameraDemo(Node):
 
         # Timer rebuild required
         self.declare_parameter(
-            "fps", 30,
+            "fps", 2,
             ParameterDescriptor(
                 description="Camera frame rate in Hz",
                 integer_range=[IntegerRange(from_value=1, to_value=60, step=1)],

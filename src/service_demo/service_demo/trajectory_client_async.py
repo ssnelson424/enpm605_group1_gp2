@@ -47,6 +47,10 @@ class TrajectoryClientAsync(Node):
 
         self.get_logger().info("Sending async request...")
         future = self._client.call_async(request)
+        
+        # for _ in range(1,20):
+        #     self.get_logger().info("Executing after service call")
+        
         future.add_done_callback(self._response_callback)
 
     def _response_callback(self, future) -> None:

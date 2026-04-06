@@ -44,31 +44,33 @@ cbb() {
 
 # ── Bash ─────────────────────────────────────────────────────────────────────
 if [ -n "$BASH_VERSION" ]; then
-    function enpm605() {
-        # Source the ROS 2 ROS_DISTRO base installation
-        source /opt/ros/${ROS_DISTRO}/setup.bash
-        # Source the course workspace
-        source ~/enpm605_ws/install/setup.bash
-        # Enable tab completion for colcon
-        source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
-        # Enable tab completion for ros2
-        eval "$(register-python-argcomplete ros2)"
-        # Navigate to the workspace root
-        cd ~/enpm605_ws
-    }
+function enpm605() {
+    # Source the ROS 2 base installation
+    source /opt/ros/${ROS_DISTRO}/setup.bash
+    # Source the course workspace
+    source ~/enpm605_ws/install/setup.bash
+    # Enable tab completion for colcon
+    source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
+    # Enable tab completion for ros2
+    eval "$(register-python-argcomplete3 ros2)"
+    # Navigate to the workspace root
+    cd ~/enpm605_ws
+}
 fi
 
 # ── Zsh ──────────────────────────────────────────────────────────────────────
 # Only define the function if the current shell is Zsh
 if [ -n "$ZSH_VERSION" ]; then
-    function enpm605() {
-        # Source the ROS 2 ROS_DISTRO base installation
-        source /opt/ros/${ROS_DISTRO}/setup.zsh
-        # Source the course workspace
-        source ~/enpm605_ws/install/setup.zsh
-        # Enable tab completion for colcon (zsh hook)
-        source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh
-        # Navigate to the workspace root
-        cd ~/enpm605_ws
-    }
+function enpm605() {
+    # Source the ROS 2 base installation
+    source /opt/ros/${ROS_DISTRO}/setup.zsh
+    # Source the course workspace
+    source ~/enpm605_ws/install/setup.zsh
+    # Enable tab completion for colcon (zsh hook)
+    source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh
+    # Enable tab completion for ros2
+    eval "$(register-python-argcomplete3 ros2)"
+    # Navigate to the workspace root
+    cd ~/enpm605_ws
+}
 fi

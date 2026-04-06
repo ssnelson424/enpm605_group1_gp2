@@ -53,8 +53,8 @@ class TrajectoryClientSync(Node):
         """Send a synchronous request every timer tick."""
         self._send_request()
         
-        for _ in range(1,20):
-            self.get_logger().info("Executing after service call")
+        # for _ in range(1,20):
+        #     self.get_logger().info("Executing after service call")
 
     def _send_request(self) -> None:
         """Build and send a synchronous ComputeTrajectory request."""
