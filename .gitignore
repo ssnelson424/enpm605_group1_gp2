@@ -59,4 +59,4 @@ src.zip
 __pycache__/
 .claude
 */CLAUDE.md
-*/diagrams/
+src/action_demo/diagrams/
