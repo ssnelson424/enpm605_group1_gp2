@@ -47,4 +47,5 @@ class TaskStatusDemo(Node):
             f"completion={msg.completion_percentage:.0f}%"
         )
 
+        # Advance to the next status, wrapping back to 0 after the last one
         self._index = (self._index + 1) % len(self._statuses)

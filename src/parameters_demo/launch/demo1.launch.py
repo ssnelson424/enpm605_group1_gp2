@@ -17,8 +17,8 @@ def generate_launch_description() -> LaunchDescription:
         name="camera_demo",
         parameters=[
             {
-                "camera_name": "front_camera",
-                "camera_rate": 30,
+                "camera_name": "rear_cam",
+                "fps": 15,
             }
         ],
     )

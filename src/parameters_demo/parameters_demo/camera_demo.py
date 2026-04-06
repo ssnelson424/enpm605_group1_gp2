@@ -5,7 +5,7 @@ update ROS 2 parameters using ParameterDescriptor and parameter
 callbacks.
 """
 
-from std_msgs.msg import String
+from sensor_msgs.msg import Image
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rcl_interfaces.msg import (
@@ -98,6 +98,15 @@ class CameraDemo(Node):
         self._brightness: int = (
             self.get_parameter("brightness").get_parameter_value().integer_value
         )
+        self._image_width: int = (
+            self.get_parameter("image_width").get_parameter_value().integer_value
+        )
+        self._image_height: int = (
+            self.get_parameter("image_height").get_parameter_value().integer_value
+        )
+        self._encoding: str = (
+            self.get_parameter("encoding").get_parameter_value().string_value
+        )
 
         self.get_logger().info(f"camera_name: {self._camera_name}")
         self.get_logger().info(f"camera_frame_id: {self._camera_frame_id}")
@@ -105,7 +114,7 @@ class CameraDemo(Node):
 
         # -- Publisher --
         self._publisher = self.create_publisher(
-            String, "/camera/image_color", 10
+            Image, "/camera/image_color", 10
         )
 
         # -- Timer --
@@ -117,11 +126,27 @@ class CameraDemo(Node):
         self.add_on_set_parameters_callback(self._parameter_update_cb)
 
     def _image_pub_callback(self) -> None:
-        """Publish a simulated camera image message."""
-        msg = String()
-        msg.data = f"Published random camera image from: {self._camera_name}"
+        """Publish a simulated camera Image message using current parameters."""
+        msg = Image()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = self._camera_frame_id
+        msg.height = self._image_height
+        msg.width = self._image_width
+        msg.encoding = self._encoding
+        msg.is_bigendian = 0
+        msg.step = self._image_width * 3  # assume 3 bytes per pixel (bgr8)
+        msg.data = bytes(msg.step * msg.height)  # zero-filled placeholder
+
         self._publisher.publish(msg)
-        self.get_logger().info(msg.data)
+
+        exposure = (
+            "auto" if self._exposure_auto else f"{self._exposure_time_us} us"
+        )
+        self.get_logger().info(
+            f"[{self._camera_name}] {msg.width}x{msg.height} "
+            f"{msg.encoding}, fps={self._fps}, exposure={exposure}, "
+            f"brightness={self._brightness}"
+        )
 
     def _parameter_update_cb(
         self, params: list[Parameter]

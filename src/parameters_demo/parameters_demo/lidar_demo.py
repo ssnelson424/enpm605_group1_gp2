@@ -4,7 +4,9 @@ This module demonstrates how to declare, retrieve, and dynamically
 update ROS 2 parameters for a simulated lidar sensor.
 """
 
-from std_msgs.msg import String
+import math
+
+from sensor_msgs.msg import LaserScan
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rcl_interfaces.msg import (
@@ -128,7 +130,7 @@ class LidarDemo(Node):
 
         # -- Publisher --
         self._publisher = self.create_publisher(
-            String, "/lidar/scan_data", 10
+            LaserScan, "/lidar/scan_data", 10
         )
 
         # -- Timer --
@@ -140,13 +142,33 @@ class LidarDemo(Node):
         self.add_on_set_parameters_callback(self._parameter_update_cb)
 
     def _scan_pub_callback(self) -> None:
-        """Publish a simulated lidar scan message."""
-        msg = String()
-        msg.data = (
-            f"Scan from: {self._lidar_name} (model: {self._lidar_model})"
+        """Publish a simulated LaserScan message using current parameters."""
+        num_readings = 360
+        msg = LaserScan()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = self._lidar_frame_id
+        msg.angle_min = self._min_angle
+        msg.angle_max = self._max_angle
+        msg.angle_increment = (
+            (self._max_angle - self._min_angle) / num_readings
         )
+        msg.time_increment = 0.0
+        msg.scan_time = 1.0 / self._scan_frequency
+        msg.range_min = self._min_range
+        msg.range_max = self._max_range
+        # Placeholder ranges/intensities (all at max_range)
+        msg.ranges = [self._max_range] * num_readings
+        msg.intensities = [self._intensity_threshold] * num_readings
+
         self._publisher.publish(msg)
-        self.get_logger().info(msg.data)
+
+        self.get_logger().info(
+            f"[{self._lidar_name}] model={self._lidar_model}, "
+            f"freq={self._scan_frequency} Hz, "
+            f"range=[{self._min_range:.2f}, {self._max_range:.2f}] m, "
+            f"angle=[{math.degrees(self._min_angle):.0f}, "
+            f"{math.degrees(self._max_angle):.0f}] deg"
+        )
 
     def _parameter_update_cb(
         self, params: list[Parameter]
