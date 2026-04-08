@@ -45,16 +45,31 @@ cbb() {
 # ── Bash ─────────────────────────────────────────────────────────────────────
 if [ -n "$BASH_VERSION" ]; then
 function enpm605() {
-    # Source the ROS 2 base installation
-    source /opt/ros/${ROS_DISTRO}/setup.bash
-    # Source the course workspace
-    source ~/enpm605_ws/install/setup.bash
-    # Enable tab completion for colcon
-    source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
-    # Enable tab completion for ros2
-    eval "$(register-python-argcomplete3 ros2)"
-    # Navigate to the workspace root
-    cd ~/enpm605_ws
+    local files=(
+        "/opt/ros/${ROS_DISTRO}/setup.bash"
+        "$HOME/enpm605_ws/install/setup.bash"
+        "/usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash"
+    )
+
+    for f in "${files[@]}"; do
+        if [ -f "$f" ]; then
+            source "$f"
+        else
+            echo "[enpm605] Warning: file not found, skipping: $f"
+        fi
+    done
+
+    if command -v register-python-argcomplete3 &>/dev/null; then
+        eval "$(register-python-argcomplete3 ros2)"
+    else
+        echo "[enpm605] Warning: register-python-argcomplete3 not found, skipping ros2 completion"
+    fi
+
+    if [ -d "$HOME/enpm605_ws" ]; then
+        cd "$HOME/enpm605_ws"
+    else
+        echo "[enpm605] Warning: workspace directory not found: ~/enpm605_ws"
+    fi
 }
 fi
 
@@ -62,15 +77,25 @@ fi
 # Only define the function if the current shell is Zsh
 if [ -n "$ZSH_VERSION" ]; then
 function enpm605() {
-    # Source the ROS 2 base installation
-    source /opt/ros/${ROS_DISTRO}/setup.zsh
-    # Source the course workspace
-    source ~/enpm605_ws/install/setup.zsh
-    # Enable tab completion for colcon (zsh hook)
-    source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh
-    # Enable tab completion for ros2
-    eval "$(register-python-argcomplete3 ros2)"
-    # Navigate to the workspace root
-    cd ~/enpm605_ws
+    local files=(
+        "/opt/ros/${ROS_DISTRO}/setup.zsh"
+        "$HOME/rosbot_ws/install/setup.zsh"
+        "$HOME/enpm605_ws/install/setup.zsh"
+        "/usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh"
+    )
+
+    for f in "${files[@]}"; do
+        if [[ -f "$f" ]]; then
+            source "$f"
+        else
+            echo "[enpm605] Warning: file not found, skipping: $f"
+        fi
+    done
+
+    if [[ -d "$HOME/enpm605_ws" ]]; then
+        cd "$HOME/enpm605_ws"
+    else
+        echo "[enpm605] Warning: workspace directory not found: ~/enpm605_ws"
+    fi
 }
 fi
