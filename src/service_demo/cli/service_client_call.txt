@@ -1,1 +1,0 @@
-ros2 service call /compute_trajectory custom_interfaces/srv/ComputeTrajectory "{start_pose: {position: {x: 0.0}}, goal_pose: {position: {x: 5.0}}, max_velocity: 1.0}"

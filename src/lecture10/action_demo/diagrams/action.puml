@@ -1,0 +1,54 @@
+@startuml action
+!theme plain
+
+skinparam backgroundColor white
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantPadding 30
+skinparam sequenceBoxPadding 10
+skinparam noteFontSize 11
+
+title ROS 2 Action Communication
+
+participant "Action Client" as Client
+participant "Action Server\n(MultiThreadedExecutor)" as Server
+
+== Goal Request ==
+
+Client -> Client : wait_for_server()
+Client -> Server : send_goal_async(goal)
+note right of Client : Returns **Future₁**
+
+Server -> Server : _goal_callback(goal_request)
+note right of Server : Validate goal fields.\nReturn ACCEPT or REJECT.
+
+alt Goal Accepted
+  Server --> Client : GoalHandle (accepted=True)
+  Client -> Client : _goal_response_callback(future₁)
+  Client -> Client : goal_handle.get_result_async()
+  note right of Client : Returns **Future₂**\nfor the final result
+
+  == Execution with Feedback ==
+
+  activate Server
+  Server -> Server : _execute_callback(goal_handle)
+
+  loop Every iteration
+    Server --> Client : publish_feedback(feedback)
+    Client -> Client : _feedback_callback(feedback_msg)
+    note right of Client : Log progress:\npercent_complete,\ndistance_remaining
+  end
+
+  == Normal Completion ==
+
+  Server -> Server : goal_handle.succeed()
+  deactivate Server
+  Server --> Client : Result (STATUS_SUCCEEDED)
+  Client -> Client : _result_callback(future₂)
+
+else Goal Rejected
+  Server --> Client : GoalHandle (accepted=False)
+  Client -> Client : _goal_response_callback(future₁)
+  note right of Client : goal_handle.accepted\nis False. Stop here.
+end
+
+@enduml

@@ -79,7 +79,6 @@ if [ -n "$ZSH_VERSION" ]; then
 function enpm605() {
     local files=(
         "/opt/ros/${ROS_DISTRO}/setup.zsh"
-        "$HOME/rosbot_ws/install/setup.zsh"
         "$HOME/enpm605_ws/install/setup.zsh"
         "/usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh"
     )
