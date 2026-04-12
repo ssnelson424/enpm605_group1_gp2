@@ -7,12 +7,12 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     camera_image_topic_arg = DeclareLaunchArgument(
         "camera_image_topic",
-        default_value="/camera/color/image_raw",
+        default_value="/oak/rgb/color",
         description="Color image topic to subscribe to",
     )
     camera_info_topic_arg = DeclareLaunchArgument(
         "camera_info_topic",
-        default_value="/camera/color/camera_info",
+        default_value="/oak/stereo/camera_info",
         description="CameraInfo topic matching the image topic",
     )
     marker_size_arg = DeclareLaunchArgument(

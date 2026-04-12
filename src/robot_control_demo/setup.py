@@ -13,6 +13,8 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         # Include launch files
         (os.path.join("share", package_name, "launch"), glob("launch/*")),
+        # Include config files
+        (os.path.join("share", package_name, "config"), glob("config/*")),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -29,6 +31,7 @@ setup(
     entry_points={
         "console_scripts": [
             "p_controller = robot_control_demo.scripts.main_p_controller_demo:main",
+            "random_mover = robot_control_demo.scripts.main_random_mover_demo:main",
         ],
     },
 )
