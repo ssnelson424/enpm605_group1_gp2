@@ -59,12 +59,6 @@ function enpm605() {
         fi
     done
 
-    if command -v register-python-argcomplete3 &>/dev/null; then
-        eval "$(register-python-argcomplete3 ros2)"
-    else
-        echo "[enpm605] Warning: register-python-argcomplete3 not found, skipping ros2 completion"
-    fi
-
     if [ -d "$HOME/enpm605_ws" ]; then
         cd "$HOME/enpm605_ws"
     else
