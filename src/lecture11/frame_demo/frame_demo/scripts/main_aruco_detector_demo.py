@@ -5,7 +5,7 @@ in a camera image stream and broadcasts each marker pose as a TF frame.
 """
 
 import rclpy
-from frame_demo.aruco_detector_demo import ArucoDetectorDemo
+from frame_demo.dynamic_detector_demo import ArucoDetectorDemo
 
 
 def main(args=None):

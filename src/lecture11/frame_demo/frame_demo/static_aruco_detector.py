@@ -30,12 +30,19 @@ class StaticArucoDetector(Node):
         self.declare_parameter("marker_size", 0.1)  # meters
         self.declare_parameter("dictionary_id", "DICT_5X5_250")
         self.declare_parameter("child_frame_id", "static_aruco_box")
+        # Optional override for the TF parent frame. solvePnP returns a pose
+        # in the camera *optical* convention (X right, Y down, Z forward),
+        # but the image header usually carries a ROS-convention mounting
+        # frame. Set this to an optical-frame name to publish correctly.
+        # Empty string => fall back to image_header.frame_id.
+        self.declare_parameter("parent_frame_id", "")
 
         self._camera_image_topic = self.get_parameter("camera_image_topic").value
         self._camera_info_topic = self.get_parameter("camera_info_topic").value
         self._marker_size = self.get_parameter("marker_size").value
         self._dictionary_id_str = self.get_parameter("dictionary_id").value
         self._child_frame_id = self.get_parameter("child_frame_id").value
+        self._parent_frame_id = self.get_parameter("parent_frame_id").value
 
         self._camera_matrix = None
         self._dist_coeffs = None
@@ -128,7 +135,7 @@ class StaticArucoDetector(Node):
 
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = image_header.frame_id
+        t.header.frame_id = self._parent_frame_id or image_header.frame_id
         t.child_frame_id = self._child_frame_id
         t.transform.translation.x = float(tvec[0])
         t.transform.translation.y = float(tvec[1])

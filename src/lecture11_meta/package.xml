@@ -10,6 +10,8 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>rqt_tf_tree</depend>
+  <depend>rqt_image_view</depend>
   <!-- Rosbot simulation packages (ament_cmake, built with Release) -->
   <exec_depend>husarion_components_description</exec_depend>
   <exec_depend>husarion_gz_worlds</exec_depend>

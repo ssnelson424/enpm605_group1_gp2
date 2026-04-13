@@ -30,6 +30,15 @@ def generate_launch_description():
         default_value="true",
         description="Whether to broadcast TF frames for detected markers",
     )
+    parent_frame_id_arg = DeclareLaunchArgument(
+        "parent_frame_id",
+        default_value="oak_rgb_camera_optical_frame",
+        description=(
+            "TF parent frame for the published marker transforms. "
+            "Should be the camera *optical* frame so solvePnP poses "
+            "(X right, Y down, Z forward) attach correctly."
+        ),
+    )
 
     aruco_detector_node = Node(
         package="frame_demo",
@@ -42,6 +51,7 @@ def generate_launch_description():
                 "marker_size": LaunchConfiguration("marker_size"),
                 "dictionary_id": LaunchConfiguration("dictionary_id"),
                 "publish_tf": LaunchConfiguration("publish_tf"),
+                "parent_frame_id": LaunchConfiguration("parent_frame_id"),
             }
         ],
     )
@@ -52,5 +62,6 @@ def generate_launch_description():
     ld.add_action(marker_size_arg)
     ld.add_action(dictionary_id_arg)
     ld.add_action(publish_tf_arg)
+    ld.add_action(parent_frame_id_arg)
     ld.add_action(aruco_detector_node)
     return ld

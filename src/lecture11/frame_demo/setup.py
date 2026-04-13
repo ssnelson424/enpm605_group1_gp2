@@ -29,6 +29,8 @@ setup(
         "console_scripts": [
             "aruco_detector = frame_demo.scripts.main_aruco_detector_demo:main",
             "static_aruco_detector = frame_demo.scripts.main_static_aruco_detector:main",
+            "aruco_marker_listener = frame_demo.scripts.main_aruco_marker_listener:main",
+            "kdl_chain_demo = frame_demo.scripts.main_kdl_chain_demo:main",
         ],
     },
 )

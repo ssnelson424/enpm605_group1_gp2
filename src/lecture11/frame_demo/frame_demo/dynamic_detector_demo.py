@@ -53,12 +53,19 @@ class ArucoDetectorDemo(Node):
         self.declare_parameter("marker_size", 0.194)  # meters
         self.declare_parameter("dictionary_id", "DICT_5X5_250")
         self.declare_parameter("publish_tf", True)
+        # solvePnP returns a pose in the camera *optical* convention
+        # (X right, Y down, Z forward), but the image header usually
+        # carries the ROS-convention mounting frame. Set this to the
+        # camera's optical frame for the TFs to land correctly.
+        # Empty => fall back to image_header.frame_id.
+        self.declare_parameter("parent_frame_id", "")
 
         self._camera_image_topic = self.get_parameter("camera_image_topic").value
         self._camera_info_topic = self.get_parameter("camera_info_topic").value
         self._marker_size = self.get_parameter("marker_size").value
         self._dictionary_id_str = self.get_parameter("dictionary_id").value
         self._publish_tf = self.get_parameter("publish_tf").value
+        self._parent_frame_id = self.get_parameter("parent_frame_id").value
 
         # Camera calibration (populated by camera_info callback)
         self._camera_matrix = None
@@ -220,7 +227,7 @@ class ArucoDetectorDemo(Node):
 
         t = TransformStamped()
         t.header.stamp = image_header.stamp
-        t.header.frame_id = image_header.frame_id  # camera optical frame
+        t.header.frame_id = self._parent_frame_id or image_header.frame_id
         t.child_frame_id = f"aruco_marker_{marker_id}"
         t.transform.translation.x = float(tvec[0])
         t.transform.translation.y = float(tvec[1])
