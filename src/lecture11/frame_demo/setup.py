@@ -28,6 +28,7 @@ setup(
     entry_points={
         "console_scripts": [
             "aruco_detector = frame_demo.scripts.main_aruco_detector_demo:main",
+            "static_aruco_detector = frame_demo.scripts.main_static_aruco_detector:main",
         ],
     },
 )
