@@ -45,6 +45,9 @@ cbb() {
 # ── Bash ─────────────────────────────────────────────────────────────────────
 if [ -n "$BASH_VERSION" ]; then
 function enpm605() {
+    # Robot model
+    export ROBOT_MODEL=rosbot
+    
     local files=(
         "/opt/ros/${ROS_DISTRO}/setup.bash"
         "$HOME/enpm605_ws/install/setup.bash"
@@ -71,6 +74,9 @@ fi
 # Only define the function if the current shell is Zsh
 if [ -n "$ZSH_VERSION" ]; then
 function enpm605() {
+    # Robot model
+    export ROBOT_MODEL=rosbot
+
     local files=(
         "/opt/ros/${ROS_DISTRO}/setup.zsh"
         "$HOME/enpm605_ws/install/setup.zsh"
