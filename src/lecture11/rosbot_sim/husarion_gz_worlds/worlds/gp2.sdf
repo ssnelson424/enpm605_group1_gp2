@@ -71,15 +71,19 @@
     <!-- points toward the goal's final_heading.                           -->
     <!--                                                                   -->
     <!-- Matches config/goals.yaml in group<N>_gp2:                        -->
-    <!--   Goal 1: (2.0, 0.0, heading=0.0)    red                          -->
-    <!--   Goal 2: (2.0, 2.0, heading=pi/2)   green                        -->
-    <!--   Goal 3: (0.0, 2.0, heading=pi)     blue                         -->
+    <!-- Equilateral triangle, radius 5 m around the origin, vertices at   -->
+    <!-- angles 0, 2pi/3, -2pi/3. Each final_heading points radially       -->
+    <!-- outward (away from the origin).                                   -->
+    <!--                                                                   -->
+    <!--   Goal 1: ( 5.00,  0.000,  heading=  0.0000)    red              -->
+    <!--   Goal 2: (-2.50,  4.330,  heading=  2.0944)    green            -->
+    <!--   Goal 3: (-2.50, -4.330,  heading= -2.0944)    blue             -->
     <!-- ================================================================= -->
 
     <model name="goal_marker_1">
       <static>true</static>
       <link name="link">
-        <pose>2.0 0.0 0.0 0.0 0.0 0.0</pose>
+        <pose>5.0 0.0 0.0 0.0 0.0 0.0</pose>
         <!-- Disk (target base) -->
         <visual name="disk">
           <pose>0 0 0.0025 0 0 0</pose>
@@ -104,9 +108,9 @@
             </box>
           </geometry>
           <material>
-            <ambient>1.0 1.0 1.0 1</ambient>
-            <diffuse>1.0 1.0 1.0 1</diffuse>
-            <specular>0.2 0.2 0.2 1</specular>
+            <ambient>0.0 0.0 0.0 1</ambient>
+            <diffuse>0.0 0.0 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
           </material>
         </visual>
         <!-- Arrow head (triangular tip, approximated by rotated box) -->
@@ -118,9 +122,9 @@
             </box>
           </geometry>
           <material>
-            <ambient>1.0 1.0 1.0 1</ambient>
-            <diffuse>1.0 1.0 1.0 1</diffuse>
-            <specular>0.2 0.2 0.2 1</specular>
+            <ambient>0.0 0.0 0.0 1</ambient>
+            <diffuse>0.0 0.0 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
           </material>
         </visual>
       </link>
@@ -129,7 +133,7 @@
     <model name="goal_marker_2">
       <static>true</static>
       <link name="link">
-        <pose>2.0 2.0 0.0 0.0 0.0 1.5707963267948966</pose>
+        <pose>-2.5 4.330127018922193 0.0 0.0 0.0 2.0943951023931953</pose>
         <visual name="disk">
           <pose>0 0 0.0025 0 0 0</pose>
           <geometry>
@@ -152,9 +156,9 @@
             </box>
           </geometry>
           <material>
-            <ambient>1.0 1.0 1.0 1</ambient>
-            <diffuse>1.0 1.0 1.0 1</diffuse>
-            <specular>0.2 0.2 0.2 1</specular>
+            <ambient>0.0 0.0 0.0 1</ambient>
+            <diffuse>0.0 0.0 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
           </material>
         </visual>
         <visual name="arrow_head">
@@ -165,9 +169,9 @@
             </box>
           </geometry>
           <material>
-            <ambient>1.0 1.0 1.0 1</ambient>
-            <diffuse>1.0 1.0 1.0 1</diffuse>
-            <specular>0.2 0.2 0.2 1</specular>
+            <ambient>0.0 0.0 0.0 1</ambient>
+            <diffuse>0.0 0.0 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
           </material>
         </visual>
       </link>
@@ -176,7 +180,7 @@
     <model name="goal_marker_3">
       <static>true</static>
       <link name="link">
-        <pose>0.0 2.0 0.0 0.0 0.0 3.141592653589793</pose>
+        <pose>-2.5 -4.330127018922193 0.0 0.0 0.0 -2.0943951023931953</pose>
         <visual name="disk">
           <pose>0 0 0.0025 0 0 0</pose>
           <geometry>
@@ -199,9 +203,9 @@
             </box>
           </geometry>
           <material>
-            <ambient>1.0 1.0 1.0 1</ambient>
-            <diffuse>1.0 1.0 1.0 1</diffuse>
-            <specular>0.2 0.2 0.2 1</specular>
+            <ambient>0.0 0.0 0.0 1</ambient>
+            <diffuse>0.0 0.0 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
           </material>
         </visual>
         <visual name="arrow_head">
@@ -212,9 +216,9 @@
             </box>
           </geometry>
           <material>
-            <ambient>1.0 1.0 1.0 1</ambient>
-            <diffuse>1.0 1.0 1.0 1</diffuse>
-            <specular>0.2 0.2 0.2 1</specular>
+            <ambient>0.0 0.0 0.0 1</ambient>
+            <diffuse>0.0 0.0 0.0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
           </material>
         </visual>
       </link>
