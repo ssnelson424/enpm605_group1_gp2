@@ -1,0 +1,62 @@
+@startuml service_sync
+!theme plain
+
+skinparam backgroundColor white
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantPadding 30
+skinparam sequenceBoxPadding 10
+skinparam noteFontSize 11
+
+title ROS 2 Service Communication (Sync Client)
+
+box "Client Process" #lightyellow
+  participant "Timer Callback\n(default group)" as Timer
+  participant "Service Client\n(separate group)" as SClient
+end box
+
+participant "MultiThreadedExecutor" as Exec
+participant "Server Node" as Server
+
+== Initialization ==
+
+note over Timer, SClient
+  Client uses **two callback groups**:
+  • Timer → default MutuallyExclusiveCallbackGroup
+  • Service client → separate MutuallyExclusiveCallbackGroup
+  Must use **MultiThreadedExecutor** so both can run concurrently.
+end note
+
+== Request/Response (Sync) ==
+
+Exec -> Timer : _timer_callback()
+activate Timer
+
+Timer -> SClient : self._client.call(request)
+activate SClient
+note right of Timer #salmon : **Blocks this thread**\nuntil response arrives
+
+SClient -> Server : request
+activate Server
+
+Server -> Server : _service_callback(\nrequest, response)
+
+Server --> SClient : response
+deactivate Server
+
+SClient --> Timer : response
+deactivate SClient
+note right of Timer : Thread unblocked.\nProcess response.
+
+deactivate Timer
+
+== Deadlock Scenario ==
+
+note over Timer, Exec #salmon
+  **DEADLOCK** if any of these are missing:
+  1. Service client not in a **separate callback group**
+  2. Not using a **MultiThreadedExecutor**
+  → The blocked timer thread holds the only executor thread,
+    so the response can never be delivered.
+end note
+
+@enduml

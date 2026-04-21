@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>lecture9_meta</name>
+  <version>0.0.1</version>
+  <description>Metapackage for Lecture 9 (executors, callback groups, and launch
+  files). Groups executor_demo and launch_demo.</description>
+  <maintainer email="zeidk@umd.edu">Zeid Kootbally</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>executor_demo</exec_depend>
+  <exec_depend>launch_demo</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

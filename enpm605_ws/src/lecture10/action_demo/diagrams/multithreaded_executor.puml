@@ -1,0 +1,70 @@
+@startuml multithreaded_executor
+!theme plain
+
+skinparam backgroundColor white
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantPadding 20
+skinparam sequenceBoxPadding 10
+skinparam noteFontSize 11
+skinparam sequenceGroupBodyBackgroundColor transparent
+
+title Why MultiThreadedExecutor for Action Servers?
+
+box "SingleThreadedExecutor (1 thread)" #FFECEC
+  participant "Thread" as ST
+end box
+
+participant "Action Server" as Server1
+
+== SingleThreadedExecutor — DEADLOCK ==
+
+ST -> Server1 : _execute_callback()
+activate ST #salmon
+activate Server1
+
+note right of Server1 : Blocks on\ntime.sleep(1.0)
+
+[--> Server1 : cancel request arrives
+note over ST #salmon : ❌ Cannot process\n_cancel_callback\n— the only thread\nis blocked!
+
+Server1 --> ST : ...sleeps through all iterations...
+Server1 -> Server1 : goal_handle.succeed()
+note right of Server1 #salmon : Goal completes.\nCancel was **ignored**.
+deactivate Server1
+deactivate ST
+
+|||
+== ══════════════════════════════════════ ==
+|||
+
+box "MultiThreadedExecutor (N threads)" #ECFFEC
+  participant "Thread 1" as T1
+  participant "Thread 2" as T2
+end box
+
+participant "Action Server " as Server2
+
+== MultiThreadedExecutor — WORKS ==
+
+T1 -> Server2 : _execute_callback()
+activate T1 #lightgreen
+activate Server2
+
+note right of Server2 : Blocks on\ntime.sleep(1.0)
+
+[--> Server2 : cancel request arrives
+
+T2 -> Server2 : _cancel_callback()
+activate T2 #lightblue
+note right of T2 : ✅ Runs on Thread 2\nReturns CancelResponse.ACCEPT
+Server2 --> T2 : CancelResponse.ACCEPT
+deactivate T2
+
+note right of Server2 : is_cancel_requested\n→ True
+
+Server2 -> Server2 : goal_handle.canceled()
+note right of Server2 #lightgreen : Goal properly canceled.
+deactivate Server2
+deactivate T1
+
+@enduml

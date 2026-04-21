@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>lecture10_meta</name>
+  <version>0.0.1</version>
+  <description>Metapackage for Lecture 10 (custom interfaces, services, actions,
+  parameters, and message passing). Groups parameters_demo,
+  custom_interfaces, service_demo, action_demo, and message_demo.</description>
+  <maintainer email="zeidk@umd.edu">Zeid Kootbally</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>parameters_demo</exec_depend>
+  <exec_depend>custom_interfaces</exec_depend>
+  <exec_depend>service_demo</exec_depend>
+  <exec_depend>action_demo</exec_depend>
+  <exec_depend>message_demo</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
