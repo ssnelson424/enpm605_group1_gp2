@@ -4,9 +4,8 @@
   <version>0.0.1</version>
   <description>Metapackage for GP2 (action-based goal navigation).
   </description>
-  <maintainer email="zeidk@umd.edu">Zeid Kootbally</maintainer>
-  <maintainer email="zeidk@umd.edu">Zeid Kootbally</maintainer>
-  <maintainer email="zeidk@umd.edu">Zeid Kootbally</maintainer>
+  <maintainer email="kdeguzma@umd.edu">kdeguzma</maintainer>
+  <maintainer email="ssnelson@umd.edu">ssnelson</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -31,8 +30,8 @@
   <exec_depend>rosbot_utils</exec_depend>
 
   <!-- add your two packages here -->
-  <!-- <exec_depend>group<N>_gp2_interfaces</exec_depend>
-  <exec_depend>group<N>_gp2</exec_depend> -->
+  <exec_depend>group1_gp2_interfaces</exec_depend>
+  <exec_depend>group1_gp2</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

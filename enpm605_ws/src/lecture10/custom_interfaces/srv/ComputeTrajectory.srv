@@ -1,9 +1,0 @@
-# Request
-geometry_msgs/Pose start_pose
-geometry_msgs/Pose goal_pose
-float64 max_velocity
----
-# Response
-bool success
-string message
-geometry_msgs/Pose[] waypoints
