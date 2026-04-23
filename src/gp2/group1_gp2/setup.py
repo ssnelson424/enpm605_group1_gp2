@@ -14,10 +14,10 @@ setup(
     ],
     install_requires=["setuptools"],
     zip_safe=True,
-    maintainer="kdeguzma",
-    maintainer_email="kdeguzma@umd.edu",
-    description="TODO: Package description",
-    license="TODO: License declaration",
+    maintainer="kdeguzma, ssnelson",
+    maintainer_email="kdeguzma@umd.edu, ssnelson@umd.edu",
+    description="This package directs a rosbot to three goals location and orientation in gazebo",
+    license="Apache-2.0",
     extras_require={
         "test": [
             "pytest",
