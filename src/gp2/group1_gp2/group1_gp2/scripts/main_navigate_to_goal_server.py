@@ -7,7 +7,7 @@
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 
-from gp2.group1_gp2.group1_gp2 import NavigateToGoalServer
+from gp2.group1_gp2.group1_gp2.navigate_to_goal_server import NavigateToGoalServer
 
 
 def main(args=None):
