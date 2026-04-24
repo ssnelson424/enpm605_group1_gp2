@@ -1,3 +1,9 @@
+# ENPM605 - RO01
+# Group Project 2 - Group 1
+# Kyle DeGuzman: 120452062
+# Stephen Snelson: 12254074
+# main_navigate_to_goal_server.py - Navigate to goal server main function.
+
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 
