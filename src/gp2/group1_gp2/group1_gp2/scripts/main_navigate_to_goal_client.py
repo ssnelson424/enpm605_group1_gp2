@@ -5,7 +5,7 @@
 # main_navigate_to_goal_client.py - Navigate to goal client main function.
 import rclpy
 
-from group1_gp2.group1_gp2.navigate_to_goal_client import NavigationClient
+from group1_gp2.navigate_to_goal_client import NavigationClient
 
 
 def main(args=None):

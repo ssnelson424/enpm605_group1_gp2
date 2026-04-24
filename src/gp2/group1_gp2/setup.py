@@ -4,7 +4,7 @@ package_name = "group1_gp2"
 
 setup(
     name=package_name,
-    version="0.0.0",
+    version="1.0.0",
     packages=find_packages(exclude=["test"]),
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
@@ -14,8 +14,8 @@ setup(
     ],
     install_requires=["setuptools"],
     zip_safe=True,
-    maintainer="kdeguzma, ssnelson",
-    maintainer_email="kdeguzma@umd.edu, ssnelson@umd.edu",
+    maintainer="kdeguzma",
+    maintainer_email="kdeguzma@umd.edu",
     description="This package directs a rosbot to three goals location and orientation in gazebo",
     license="Apache-2.0",
     extras_require={

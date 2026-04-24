@@ -9,11 +9,11 @@ import time
 from typing import Any
 
 import rclpy
-from geometry_msgs.msg import TwistStamped
+from geometry_msgs.msg import Pose, TwistStamped
 from group1_gp2_interfaces.action import NavigateToGoal
 from nav_msgs.msg import Odometry
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
-from rclpy.action.server import GoalRequest, ServerGoalHandle
+from rclpy.action.server import ServerGoalHandle
 from rclpy.node import Node
 from scipy.spatial.transform import Rotation as R
 
@@ -73,7 +73,7 @@ class NavigateToGoalServer(Node):
             self,
             NavigateToGoal,  # The .action file interface.
             "navigate_to_goal",  # The action name, shared with the client.
-            execute_callback=self.execute_callback,
+            execute_callback=self._execute_callback,
             goal_callback=self.goal_callback,
             cancel_callback=self.cancel_callback,
         )
@@ -91,12 +91,12 @@ class NavigateToGoalServer(Node):
             f"k_yaw={self._k_yaw}"
         )
 
-    def goal_callback(self, goal_request: GoalRequest) -> GoalResponse:
+    def goal_callback(self, goal_request: NavigateToGoal.Goal) -> GoalResponse:
         """Function for the goal callback. Rejects if the point is not
         a number.
 
         Args:
-            goal_request (GoalRequest): The goal from NavigateToGoal.action.
+            goal_request (NavigateToGoal.Goal): The goal from NavigateToGoal.action.
 
         Returns:
             GoalResponse: REJECT if the point is not a valid number, ACCEPT otherwise.
@@ -151,17 +151,21 @@ class NavigateToGoalServer(Node):
         if not self._odom_received:
             self._odom_received = True
             self.get_logger().info("First odometry message received — state initialized.")
+
         # Store the x and y position from msg as attributes.
         self._x = msg.pose.pose.position.x
         self._y = msg.pose.pose.position.y
+
         # Define the quaternion.
         q = msg.pose.pose.orientation
+
         # Convert the quaternion to an orientation angle.
         yaw = R.from_quat([q.x, q.y, q.z, q.w]).as_euler("xyz")[2]
+
         # Normalize the angle for control stability, then store as an attribute.
         self._yaw = math.atan2(math.sin(yaw), math.cos(yaw))
 
-    def execute_callback(self, goal_handle: ServerGoalHandle) -> Any:
+    def _execute_callback(self, goal_handle: ServerGoalHandle) -> Any:
         """Compute and publish a velocity command toward the goal.
         FROM p_controller.py.
 
@@ -299,6 +303,19 @@ class NavigateToGoalServer(Node):
                     # update to the client using publish_feedback. Set the new
                     # last_feedback_time as now.
                     feedback = NavigateToGoal.Feedback()
+
+                    # Fill the pose and use a quaternion.
+                    feedback.current_pose = Pose()
+                    feedback.current_pose.position.x = self._x
+                    feedback.current_pose.position.y = self._y
+
+                    q = R.from_euler("z", self._yaw).as_quat()
+                    feedback.current_pose.orientation.x = q[0]
+                    feedback.current_pose.orientation.y = q[1]
+                    feedback.current_pose.orientation.z = q[2]
+                    feedback.current_pose.orientation.w = q[3]
+
+                    # Set the remaining distance.
                     feedback.distance_remaining = rho
                     goal_handle.publish_feedback(feedback)
                     last_feedback_time = now

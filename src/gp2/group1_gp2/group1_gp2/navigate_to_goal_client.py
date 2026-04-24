@@ -3,10 +3,12 @@
 # Kyle DeGuzman: 120452062
 # Stephen Snelson: 12254074
 # navigate_to_goal_client.py - Client node that sends goal locations.
+
 from group1_gp2_interfaces.action import NavigateToGoal
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from rclpy.task import Future
+from scipy.spatial.transform import Rotation as R
 
 
 class NavigationClient(Node):
@@ -63,7 +65,11 @@ class NavigationClient(Node):
         if any(v is None for goal in self._goal_info.values() for v in goal):
             self.get_logger().error("Could not load the goal parameters.")
         else:
-            self.get_logger().info(f"Loaded 3 goals: {self._goal_info}")
+            # Format the data into a list so the dict itself isn't printed.
+            formatted_goals = [
+                f"({x:.2f}, {y:.2f}, {yaw:.2f})" for x, y, yaw in self._goal_info.values()
+            ]
+            self.get_logger().info(f"Loaded 3 goals: [{', '.join(formatted_goals)}]")
 
     def send_goal(self, goal_id: int) -> None:
         """Function to send a navigation goal to the action server.
@@ -78,7 +84,8 @@ class NavigationClient(Node):
         # before and after connecting.
         self.get_logger().info("Waiting for action server...")
         self._action_client.wait_for_server()
-        self.get_logger().info("Server Connected")
+        # Debug line to check connection.
+        # self.get_logger().info("Server Connected")
 
         # Unpack the goal location from the dictionary.
         x, y, heading = self._goal_info[goal_id]
@@ -93,7 +100,7 @@ class NavigationClient(Node):
         # Log a message of the active goal's coordinates and heading to the
         # terminal.
         self.get_logger().info(
-            f"Sending goal {self._active_goal}/3: ({x:.2f}, {y:.2f}) heading: {heading:.2f}"
+            f"--- Sending goal {self._active_goal}/3: ({x:.2f}, {y:.2f}) final_heading: {heading:.2f} ---"
         )
 
         # Send the goal asynchronously (the goal is sent but there is no waiting
@@ -142,9 +149,21 @@ class NavigationClient(Node):
         """
         # Unpack the feedback message data and store to a variable.
         feedback = feedback_msg.feedback
-        # Log the feedback message's pose and remaining distance to the terminal.
+
+        # Store feedback's current pose.
+        pose = feedback.current_pose
+
+        # Get the x and y coordinates.
+        x = pose.position.x
+        y = pose.position.y
+
+        # Get the quaternion and convert it to yaw.
+        q = pose.orientation
+        yaw = R.from_quat([q.x, q.y, q.z, q.w]).as_euler("xyz")[2]
+
+        # Log the feedback message's pose, yaw, and remaining distance to the terminal.
         self.get_logger().info(
-            f"Feedback: pose={feedback.current_pose} remaining={feedback.distance_remaining:.2f}",
+            f"Feedback: pose=({x:.2f}, {y:.2f}, yaw={yaw:.2f}) remaining={feedback.distance_remaining:.2f}",
             throttle_duration_sec=1.0,
         )
 
@@ -161,23 +180,23 @@ class NavigationClient(Node):
         result = future.result().result
         # status = future.result().status
 
-        # If the robot succeeded in reaching the goal, store the result to the
-        # _goal_results dictionary and log the goal, the total distance, and the
-        # elapsed time to the terminal.
-        self._goal_results[self._active_goal] = result
-        self.get_logger().info(
-            f"Goal {self._active_goal}/3 succeeded. total_distance={result.total_distance}, elapsed time: {result.elapsed_time}\n"
-        )
-
         # If the robot fails to reach the goal, log an error message to the terminal
         # and abort. Do NOT send the remaining goals.
         if not result.success:
             self.get_logger().error("Robot failed to reach goal. Aborting...")
             return
 
+        # If the robot succeeded in reaching the goal, store the result to the
+        # _goal_results dictionary and log the goal, the total distance, and the
+        # elapsed time to the terminal.
+        self._goal_results[self._active_goal] = result
+        self.get_logger().info(
+            f"Goal {self._active_goal}/3 succeeded. total_distance={result.total_distance:.2f}, elapsed time={result.elapsed_time:.2f}"
+        )
+
         # If the number of active goals was less than 3, increase it by 1 and
         # start a trip for the next goal with .send_goal.
-        elif self._active_goal < 3:
+        if self._active_goal < 3:
             self._active_goal += 1
             self.send_goal(self._active_goal)
 
@@ -188,7 +207,7 @@ class NavigationClient(Node):
             self.get_logger().info("Mission complete. All 3 goals reached.")
             # Loop to print all the goal results data.
             for i in range(1, 4):
-                res = self._goal_results
+                res = self._goal_results[i]
                 self.get_logger().info(
                     f"  Goal {i}: total_distance={res.total_distance:.2f}, "
                     f"elapsed_time={res.elapsed_time:.2f}s"
