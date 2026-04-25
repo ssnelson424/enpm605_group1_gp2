@@ -133,7 +133,7 @@ class NavigateToGoalServer(Node):
         """
         # THIS FUNCTION DOESN'T STOP THE ROBOT!!! It just accepts the
         # CancelResponse!
-        self.get_logger().info("Cancel request received.")
+        self.get_logger().warn("Cancel request received. Stopping the robot and finalizing the goal.")
         return CancelResponse.ACCEPT
 
     def _odom_callback(self, msg: Odometry) -> None:
@@ -205,25 +205,11 @@ class NavigateToGoalServer(Node):
         # Initialize the last feedback time with the internal clock object.
         last_feedback_time = self.get_clock().now()
 
-        # Keep this node running as long as ROS 2 is active.
-        while rclpy.ok():
-            # Cancellation check: If there is a cancel request, log a message
-            # and stop the robot using a helper function.
-            if goal_handle.is_cancel_requested:
-                self.get_logger().info("Goal canceled")
-                self._stop_robot()
-                goal_handle.canceled()
-                # Set the result data and return it. Since the task was canceled,
-                # success is False. Set the total distance and set the time as 0.
-                result = NavigateToGoal.Result()
-                result.success = False
-                result.total_distance = total_distance
-                result.elapsed_time = 0.0
-                return result
+        # Keep this node running as long as ROS 2 is active and a cancel has not been request
+        while rclpy.ok() and not goal_handle.is_cancel_requested:
 
-            # If there is no cancel request, find the change in x and y
-            # distance and the approximate distance covered, then add to the
-            # total distance.
+            # Find the change in x and y distance and the approximate distance covered, 
+            # then add to the total distance.
             dx = self._goal_x - self._x
             dy = self._goal_y - self._y
             rho = math.sqrt(dx**2 + dy**2)
@@ -293,35 +279,54 @@ class NavigateToGoalServer(Node):
                 cmd.twist.angular.z = max(-1.0, min(1.0, self._k_yaw * yaw_error))
                 self._cmd_pub.publish(cmd)
 
-                # Handle throttling for feedback publishing (no faster than 5 Hz,
-                # no slower than 1 Hz).
-                now = self.get_clock().now()
-                # Check if more than 1 second has passed.
-                if (now - last_feedback_time).nanoseconds > 1e9:
-                    # Create a new feedback message object and set in it the
-                    # remaining distance using rho. Send the it as a feedback
-                    # update to the client using publish_feedback. Set the new
-                    # last_feedback_time as now.
-                    feedback = NavigateToGoal.Feedback()
+            # Handle throttling for feedback publishing (no faster than 5 Hz,
+            # no slower than 1 Hz).
+            now = self.get_clock().now()
+            # Check if more than 1 second has passed.
+            if (now - last_feedback_time).nanoseconds > 1e9:
+                # Create a new feedback message object and set in it the
+                # remaining distance using rho. Send it as a feedback
+                # update to the client using publish_feedback. Set the new
+                # last_feedback_time as now.
+                feedback = NavigateToGoal.Feedback()
 
-                    # Fill the pose and use a quaternion.
-                    feedback.current_pose = Pose()
-                    feedback.current_pose.position.x = self._x
-                    feedback.current_pose.position.y = self._y
+                # Fill the pose and use a quaternion.
+                feedback.current_pose = Pose()
+                feedback.current_pose.position.x = self._x
+                feedback.current_pose.position.y = self._y
 
-                    q = R.from_euler("z", self._yaw).as_quat()
-                    feedback.current_pose.orientation.x = q[0]
-                    feedback.current_pose.orientation.y = q[1]
-                    feedback.current_pose.orientation.z = q[2]
-                    feedback.current_pose.orientation.w = q[3]
+                q = R.from_euler("z", self._yaw).as_quat()
+                feedback.current_pose.orientation.x = q[0]
+                feedback.current_pose.orientation.y = q[1]
+                feedback.current_pose.orientation.z = q[2]
+                feedback.current_pose.orientation.w = q[3]
 
-                    # Set the remaining distance.
-                    feedback.distance_remaining = rho
-                    goal_handle.publish_feedback(feedback)
-                    last_feedback_time = now
+                # Set the remaining distance.
+                feedback.distance_remaining = rho
+                goal_handle.publish_feedback(feedback)
+                last_feedback_time = now
 
-                # Keep the while loop running at the rate of 20 Hz.
-                rate.sleep()
+            # Keep the while loop running at the rate of 20 Hz.
+            rate.sleep()
+    
+        # Cancellation Message Received: log a message
+        if goal_handle.is_cancel_requested:
+            end_time = self.get_clock().now()
+            elapsed_time = (end_time - start_time).nanoseconds * 1e-9
+            self.get_logger().info(f"Goal canceled: total_distance = {total_distance:.2f}, elapsed_time = {elapsed_time:.2f}")
+            
+            # Set the result data for return. Since the task was canceled,
+            # success is False. Set the total distance and elapsed time.
+            result = NavigateToGoal.Result()
+            result.success = False
+            result.total_distance = total_distance
+            result.elapsed_time = elapsed_time
+            
+            #stop the robot using a helper function.
+            self._stop_robot()
+            goal_handle.canceled()
+            return result
+                    
 
     def _stop_robot(self) -> None:
         """Helper function for execute_callback. Stops

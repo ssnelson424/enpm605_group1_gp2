@@ -10,7 +10,7 @@ from group1_gp2.navigate_to_goal_client import NavigationClient
 
 def main(args=None):
     """Entry point function for the NavigationClient."""
-    # Initialize the ROS 2 client for Python.
+    
     rclpy.init(args=args)
     # Create an instance of the navigate_to_goal_client.
     node = NavigationClient("navigate_to_goal_client")

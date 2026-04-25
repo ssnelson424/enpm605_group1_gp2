@@ -42,10 +42,11 @@ class NavigationClient(Node):
             self.declare_parameter(f"goal{i}.x", 0.0)
             self.declare_parameter(f"goal{i}.y", 0.0)
             self.declare_parameter(f"goal{i}.final_heading", 0.0)
-
+        
+        
         # Import the three goals from the .yaml file using the _load_goals function.
         self._load_goals()
-
+        
         # Send the first goal to the server to start the robot moving.
         self._active_goal = 1
         self.send_goal(self._active_goal)
@@ -114,6 +115,7 @@ class NavigationClient(Node):
         # goal (in goal_callback in the server node), run _goal_response_callback to handle
         # the decision.
         future.add_done_callback(self._goal_response_callback)
+        
 
     def _goal_response_callback(self, future: Future) -> None:
         """Function to handle the goal response from the server.
@@ -139,6 +141,7 @@ class NavigationClient(Node):
 
         # Request the final result asynchronously and register a callback for when it arrives.
         goal_handle.get_result_async().add_done_callback(self._result_callback)
+        
 
     def _feedback_callback(self, feedback_msg) -> None:
         """Function to handle feedback from the action server.
@@ -178,7 +181,6 @@ class NavigationClient(Node):
         """
         # Store the future result and status to variables here.
         result = future.result().result
-        # status = future.result().status
 
         # If the robot fails to reach the goal, log an error message to the terminal
         # and abort. Do NOT send the remaining goals.
