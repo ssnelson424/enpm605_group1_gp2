@@ -201,6 +201,8 @@ class NavigateToGoalServer(Node):
         # the start time. Initialize the total distance.
         start_time = self.get_clock().now()
         total_distance = 0.0
+        last_x = self._x
+        last_y = self._y
 
         # Initialize the last feedback time with the internal clock object.
         last_feedback_time = self.get_clock().now()
@@ -213,7 +215,9 @@ class NavigateToGoalServer(Node):
             dx = self._goal_x - self._x
             dy = self._goal_y - self._y
             rho = math.sqrt(dx**2 + dy**2)
-            total_distance += rho
+            
+            step_distance = math.sqrt((self._x - last_x)**2 + (self._y - last_y)**2)
+            total_distance += step_distance
 
             # If the approximate distance is greater than the goal tolerance,
             # continue driving to the goal (phase 1).
@@ -306,11 +310,21 @@ class NavigateToGoalServer(Node):
                 goal_handle.publish_feedback(feedback)
                 last_feedback_time = now
 
+            
+            #update last known coords for use in total distance calculation
+            last_x = self._x
+            last_y = self._y
+            
             # Keep the while loop running at the rate of 20 Hz.
             rate.sleep()
     
         # Cancellation Message Received: log a message
         if goal_handle.is_cancel_requested:
+            
+            #stop the robot using a helper function.
+            self._stop_robot()
+            goal_handle.canceled()
+            
             end_time = self.get_clock().now()
             elapsed_time = (end_time - start_time).nanoseconds * 1e-9
             self.get_logger().info(f"Goal canceled: total_distance = {total_distance:.2f}, elapsed_time = {elapsed_time:.2f}")
@@ -320,11 +334,8 @@ class NavigateToGoalServer(Node):
             result = NavigateToGoal.Result()
             result.success = False
             result.total_distance = total_distance
-            result.elapsed_time = elapsed_time
-            
-            #stop the robot using a helper function.
-            self._stop_robot()
-            goal_handle.canceled()
+            result.elapsed_time = elapsed_time            
+
             return result
                     
 
